@@ -1,7 +1,7 @@
 {
-    "name": "Full page screen capture",
+    "name": "GMV AI:Convert Any URL to Video with AI",
     "version": "1.1.1",
-    "description": "Captures full page, high resolution screenshots without scrolling or glitches. Up to 4x normal screen resolution.",
+    "description": "Convert any URL into engaging videos in a few clicks. Boost your content strategy with GMV AI — perfect for social media!.",
     "manifest_version": 3,
     "background": {"service_worker": "background.js"},
     "permissions": ["activeTab", "debugger", "storage","tabs","scripting"],
@@ -20,12 +20,12 @@
         }
       ],
     "icons": {
-        "512": "icon-512.png",
-        "256": "icon-256.png",
-        "128": "icon-128.png",
-        "64": "icon-64.png",
-        "48": "icon-48.png",
-        "16": "icon-16.png"
+        "512": "download.png",
+        "256": "download.png",
+        "128": "download.png",
+        "64": "download.png",
+        "48": "download.png",
+        "16": "download.png"
     },
     "action": {"default_popup": "popup.html"}
 }

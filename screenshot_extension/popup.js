@@ -16,7 +16,17 @@ chrome.runtime.onMessage.addListener((msg) => {
         $("#capture").style.display = "none";
     }
 });
+document.addEventListener("DOMContentLoaded", () => {
+    const inputField = document.querySelector('input');
 
+    // Lấy tab hiện tại
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs.length > 0) {
+            const currentUrl = tabs[0].url; // Lấy URL của tab hiện tại
+            inputField.value = currentUrl; // Điền vào input
+        }
+    });
+});
 function capture() {
     chrome.runtime.sendMessage({ type: "capture" });
 }
