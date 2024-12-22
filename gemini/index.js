@@ -56,7 +56,16 @@ app.use(express.json({ limit: "100mb" }));
 // Khởi tạo Google Generative AI
 const genAI = new GoogleGenerativeAI("AIzaSyC2dE9kSbxdWHNokG-hvqwn7RKUP4mRwGU");
 
-// Chuyển file thành định dạng phù hợp với Google Generative AI
+// Hàm tạo thư mục nếu chưa tồn tại
+function ensureUploadsDir() {
+  const uploadsDir = path.join(__dirname, "uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+    console.log("Created uploads directory.");
+  }
+}
+
+// Hàm chuyển file thành định dạng phù hợp với Google Generative AI
 function fileToGenerativePart(filePath, mimeType) {
   return {
     inlineData: {
@@ -68,59 +77,79 @@ function fileToGenerativePart(filePath, mimeType) {
 
 // API upload và xử lý ảnh
 app.post("/upload", async (req, res) => {
-  const { image ,url } = req.body;
-  console.log(url.image)
-  console.log(url.video)
+  const { image, url } = req.body;
+
+  console.log("Received URL:", url);
   if (!image) {
     return res.status(400).json({ error: "No image data provided" });
   }
 
+  // Tạo thư mục uploads nếu chưa tồn tại
+  ensureUploadsDir();
+
+  // Xử lý dữ liệu ảnh
   const base64Data = image.replace(/^data:image\/png;base64,/, "");
   const fileName = `screenshot_${Date.now()}.png`;
   const filePath = path.join(__dirname, "uploads", fileName);
 
-  // Lưu ảnh vào thư mục uploads
+  // Kiểm tra dữ liệu Base64
+  if (!base64Data || base64Data.length < 10) {
+    return res.status(400).json({ error: "Invalid image data provided" });
+  }
+
   try {
+    // Lưu ảnh vào thư mục uploads
     fs.writeFileSync(filePath, base64Data, "base64");
     console.log("Image saved:", filePath);
 
     // Gọi Google Generative AI để xử lý
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt =
-      "Hãy lấy ra tiêu đề cùng với tóm tắt nội dung khoảng 100 từ từ nội dung trong hình ảnh. Trả về kiểu object có {title: nội dung title, description: nội dung description}";
+      "Hãy lấy ra tiêu đề cùng với tóm tắt nội dung khoảng 5 câu với phong cách quảng cáo đọc nhấn mạnh từng câu từ nội dung trong hình ảnh. Trả về kiểu object có {title: nội dung title, description: nội dung description}";
 
     const imagePart = fileToGenerativePart(filePath, "image/png");
-
     const result = await model.generateContent([prompt, imagePart]);
     const response = await result.response;
     const text = response.text();
 
+    // Dọn dẹp file sau khi xử lý
+    // if (fs.existsSync(filePath)) {
+    //   fs.unlink(filePath, (err) => {
+    //     if (err) {
+    //       console.error("Error deleting file:", err);
+    //     } else {
+    //       console.log("File deleted:", filePath);
+    //     }
+    //   });
+    // }
+
+    // Phân tích kết quả trả về từ AI
     const regex = /({.*?})/s;
     const match = text.match(regex);
-    fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error("Error deleting file:", err);
-      } else {
-        console.log("File deleted:", filePath);
-      }
-    });
     if (match && match[0]) {
       const jsonString = match[0].replace(/```json|```/g, "").trim();
       const jsonObject = JSON.parse(jsonString);
-      console.log(jsonObject)
-      return res.status(200).json({ message: "Processed successfully", data: jsonObject });
+      console.log(jsonObject);
+      return res
+        .status(200)
+        .json({ message: "Processed successfully", data: jsonObject });
     } else {
-      return res.status(200).json({ message: "No valid JSON found in response." });
+      return res
+        .status(200)
+        .json({ message: "No valid JSON found in response." });
     }
-    
   } catch (error) {
-    fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error("Error deleting file:", err);
-      } else {
-        console.log("File deleted:", filePath);
-      }
-    });
+    // Dọn dẹp file nếu có lỗi
+    if (fs.existsSync(filePath)) {
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error("Error deleting file:", err);
+        } else {
+          console.log("File deleted:", filePath);
+        }
+      });
+    }
+
     console.error("Error processing image:", error);
     return res.status(500).json({ error: "Failed to process image." });
   }
@@ -130,4 +159,3 @@ app.post("/upload", async (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
-

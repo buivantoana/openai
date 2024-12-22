@@ -1,62 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
-<!-- <div class="media-container"  id="media-container">Loading media...</div> -->
-<div>
+  </head>
+  <body>
+    <!-- <div class="media-container"  id="media-container">Loading media...</div> -->
+    <div>
+      <div id="media-container" style="display: none"></div>
+      <div style="display: flex; align-items: center; gap: 5px">
+        <img
+          src="./loading-lines-6747317-5601928-e678bda3.webp"
+          width="20px"
+          height="20px"
+          style="object-fit: cover"
+          alt=""
+        />
+        <p style="font-weight: bold; font-size: 10px">AI.GMV.VN</p>
+      </div>
+      <input type="text" disabled style="width: 96%; margin-top: 5px" />
+      <button id="capture">Convert this URL to video</button>
+      <button id="capture-success">Click for the video</button>
+      <p
+        class="hover"
+        style="
+          width: 100%;
+          text-align: end;
+          margin-top: 10px;
+          color: #666;
+          font-size: 10px;
+          transition: 0.5s;
+        "
+      >
+        Support
+      </p>
+    </div>
 
-    <div style="display: flex;align-items: center; gap: 5px;"><img src="./loading-lines-6747317-5601928-e678bda3.webp" width="20px" height="20px" style="object-fit: cover;" alt=""> <p style="font-weight: bold;font-size: 10px;">AI.GMV.VN</p></div>
-    <input type="text" disabled style="width: 96%; margin-top: 5px;">
-    <button id="capture">Convert this URL to video</button>
-    <p class="hover" style="width: 100%; text-align: end;margin-top: 10px; color: #666; font-size: 10px;transition: .5s;">Support</p>
-</div>
+    <script src="popup.js"></script>
 
-
-<script src="popup.js"></script>
-
-<style>
-    button {
+    <style>
+      button {
         margin-top: 10px;
-        padding: 12px 8px ;
+        padding: 12px 8px;
         width: 100%;
         border: 2px solid #0002;
         border-radius: 4px;
         cursor: pointer;
         background: rgb(5, 122, 85);
-        transition: background .2s ease;
+        transition: background 0.2s ease;
         font-size: "25px";
         font-weight: bold;
         color: white;
-    }
-    button:hover {
+      }
+      button:hover {
         background: rgb(8, 170, 119);
-    }
-    button:disabled {
-        opacity: .5;
+      }
+      button:disabled {
+        opacity: 0.5;
         cursor: not-allowed;
-    }
-    body {
+      }
+      body {
         cursor: pointer;
         width: 250px;
-       padding: 5px;
-    }
-    #status {
+        padding: 5px;
+      }
+      #status {
         color: #666;
         font-weight: 300;
         font-size: 14px;
         display: none;
-    }
-    #capture-sucess {
+      }
+      #capture-success {
         display: none;
-    }
-   .hover:hover{
-    text-decoration: underline;
-
-   }
-</style>
-</body>
+      }
+      .hover:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </body>
 </html>
