@@ -98,6 +98,10 @@ async function callApiWithImage(imageDataBase64) {
   const formData = new FormData();
   const base64Data = imageDataBase64.replace(/^data:image\/\w+;base64,/, "");
   const byteCharacters = atob(base64Data);
+  let uniqueImages = [...new Set(data_url.image.filter((item) => item !== ""))];
+
+  let url_image = await filterImagesByWidth(uniqueImages, 100);
+  console.log("AAA url_image ===", url_image);
   const byteNumbers = new Array(byteCharacters.length)
     .fill(0)
     .map((_, i) => byteCharacters.charCodeAt(i));
@@ -106,7 +110,7 @@ async function callApiWithImage(imageDataBase64) {
   formData.append("image_files", blob, "screenshot.png");
   formData.append("product_url", url);
   formData.append("video_urls", JSON.stringify(data_url.video));
-  formData.append("image_urls", JSON.stringify(data_url.image));
+  formData.append("image_urls", JSON.stringify(url_image));
 
   try {
     const response = await fetch(apiUrl, {
@@ -224,6 +228,27 @@ function enablePage(tabId) {
   });
 }
 
+async function filterImagesByWidth(imageLinks, minWidth) {
+  const filteredImages = [];
+
+  for (const link of imageLinks) {
+    try {
+      const response = await fetch(link);
+      if (response.ok) {
+        const blob = await response.blob();
+        const imageBitmap = await createImageBitmap(blob);
+
+        if (imageBitmap.width > minWidth) {
+          filteredImages.push(link);
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to process image: ${link}`, error);
+    }
+  }
+
+  return filteredImages;
+}
 function attach(tabId, changeInfo, tab) {
   return new Promise((resolve, reject) => {
     if (tab.status == "complete") {
