@@ -3,23 +3,39 @@ const $ = (...a) => document.querySelector(...a);
 $("#capture").onclick = capture;
 let url;
 let url_callback;
+document.querySelector("a").addEventListener("click", function (event) {
+  event.preventDefault(); // Ngăn hành động mặc định
+  chrome.tabs.create({ url: "https://ai.gmv.vn" }); // Mở tab mới với URL
+});
+
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === "status") {
-    $("#status").style.display = "block";
-    $("#status").innerText = msg.text;
-    $("button").innerText = "Capturing...";
-    $("button").setAttribute("disabled", "true");
+    $("#capture").style.display = "block";
+    $("#capture").innerText = msg.text;
+    document.getElementById("capture").style.pointerEvents = "none";
+    document.getElementById("capture").style.cursor = "not-allowed";
+    document.getElementById("capture").style.opacity = ".7";
   }
   if (msg.type === "done") {
-    $("button").removeAttribute("disabled");
-    $("button").innerText = "Capture Page";
+    // $("button").removeAttribute("disabled");
+    // $("button").innerText = "Capture Page";
     $("#capture-success").style.display = "block";
     $("#capture").style.display = "none";
   }
-  if (msg.url_callback) {
-    url_callback = msg.url_callback;
-    // Đảm bảo msg chứa thuộc tính `url`
-    chrome.tabs.create({ url: msg.url_callback });
+  if (msg.type === "fail") {
+    $("#capture").style.display = "block";
+    document.getElementById("capture").style.pointerEvents = "all";
+    document.getElementById("capture").style.cursor = "pointer";
+    document.getElementById("capture").style.opacity = "1";
+    $("#message").style.display = "block";
+    $("#message").innerText = "Something went wrong.";
+  }
+  if (msg.url_callback && msg.type === "done") {
+    $("#capture-success").onclick = () => {
+      url_callback = msg.url_callback;
+      // Đảm bảo msg chứa thuộc tính `url`
+      chrome.tabs.create({ url: msg.url_callback });
+    };
   }
 });
 document.getElementById("capture-success").addEventListener("click", () => {
@@ -113,12 +129,35 @@ async function fetchMedia() {
       target: { tabId: tab.id },
       func: function () {
         // Đảm bảo script thực thi tại trang
-        const images = Array.from(document.querySelectorAll("img")).map(
-          (img) => img.src
-        );
+        const images = Array.from(document.querySelectorAll("img"))
+          .map((img) => {
+            if (img.currentSrc) {
+              console.log("Using currentSrc:", img.currentSrc);
+              return img.currentSrc;
+            }
+            if (img.src) {
+              console.log("Using src:", img.src);
+              return img.src;
+            }
+            if (img.srcset) {
+              console.log("Processing srcset for:", img);
+              const srcsetParts = img.srcset
+                .split(",")
+                .map((src) => src.trim().split(" ")[0]);
+              console.log("Srcset parts:", srcsetParts);
+              return srcsetParts[srcsetParts.length - 1];
+            }
+            console.log("No src, srcset, or currentSrc found for:", img);
+            return null;
+          })
+          .filter(Boolean);
+
+        console.log("Images found:", images);
+
         const videos = Array.from(document.querySelectorAll("video")).map(
-          (video) => video.src
+          (video) => video.currentSrc || video.src
         );
+
         console.log("Images found:", images);
         console.log("Videos found:", videos);
 

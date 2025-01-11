@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <style>
+      a {
+        text-decoration: none;
+        color: black;
+      }
+    </style>
   </head>
   <body>
     <!-- <div class="media-container"  id="media-container">Loading media...</div> -->
@@ -22,6 +28,7 @@
       <input type="text" disabled style="width: 96%; margin-top: 5px" />
       <button id="capture">Convert this URL to video</button>
       <button id="capture-success">Click for the video</button>
+      <p id="message" style="color: red"></p>
       <p
         class="hover"
         style="
@@ -33,7 +40,7 @@
           transition: 0.5s;
         "
       >
-        Support
+        <a href="https://ai.gmv.vn">Support</a>
       </p>
     </div>
 

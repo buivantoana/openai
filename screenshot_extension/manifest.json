@@ -4,15 +4,7 @@
   "description": "Convert any URL into engaging videos in a few clicks. Boost your content strategy with GMV AI — perfect for social media!.",
   "manifest_version": 3,
   "background": { "service_worker": "background.js" },
-  "permissions": [
-    "activeTab",
-    "debugger",
-    "storage",
-    "tabs",
-    "scripting",
-    "webRequest",
-    "webRequestBlocking"
-  ],
+  "permissions": ["activeTab", "debugger", "storage", "tabs", "scripting"],
 
   "host_permissions": [
     "<all_urls>",
@@ -26,12 +18,12 @@
     }
   ],
   "icons": {
-    "512": "download.png",
-    "256": "download.png",
-    "128": "download.png",
-    "64": "download.png",
-    "48": "download.png",
-    "16": "download.png"
+    "512": "Screenshot_2024-12-29_112438-removebg-preview.png",
+    "256": "Screenshot_2024-12-29_112438-removebg-preview.png",
+    "128": "Screenshot_2024-12-29_112438-removebg-preview.png",
+    "64": "Screenshot_2024-12-29_112438-removebg-preview.png",
+    "48": "Screenshot_2024-12-29_112438-removebg-preview.png",
+    "16": "Screenshot_2024-12-29_112438-removebg-preview.png"
   },
   "action": { "default_popup": "popup.html" }
 }

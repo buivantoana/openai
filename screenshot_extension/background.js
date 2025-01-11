@@ -49,32 +49,38 @@ async function capture(tab) {
 
   try {
     // Reset device metrics và background color mỗi khi chụp ảnh
+    chrome.runtime.sendMessage({ type: "status", text: "Analyzing 0%" });
     await attach(tab.id, null, tab);
-    l("Attached debugger");
-
+    // l("Attached debugger");
+    chrome.runtime.sendMessage({ type: "status", text: "Analyzing 110%" });
     await enablePage(tab.id);
-    l("Enabled debugger page");
-
+    // l("Enabled debugger page");
+    chrome.runtime.sendMessage({ type: "status", text: "Analyzing 25%" });
     await setBg(tab.id, { color: { r: 0, g: 0, b: 0, a: 0 } }); // Set background color
-    l("Set colorless background");
-
+    // l("Set colorless background");
+    chrome.runtime.sendMessage({ type: "status", text: "Analyzing 40%" });
     const {
       contentSize: { width, height },
     } = await getSize(tab.id); // Lấy kích thước layout
-    l("Got layout metrics", { width, height });
-
+    // l("Got layout metrics", { width, height });
+    chrome.runtime.sendMessage({ type: "status", text: "Analyzing 55%" });
     await setSize(tab.id, { height, width }); // Set lại kích thước của tab
-    l("Set layout metrics");
+    // l("Set layout metrics");
 
-    await sleep(500); // Chờ một chút trước khi chụp
-
-    l("Capturing screenshot");
+    await sleep(100); // Chờ một chút trước khi chụp
+    chrome.runtime.sendMessage({ type: "status", text: "Analyzing 65%" });
+    // l("Capturing screenshot");
     let data = await screenshot(tab.id); // Chụp ảnh
-    l("Got screenshot, waiting", data);
+    // l("Got screenshot, waiting", data);
 
-    await sleep(500); // Chờ một chút sau khi chụp
+    await sleep(100); // Chờ một chút sau khi chụp
+    chrome.debugger.detach({ tabId: tab.id }, () => {
+      console.log("Debugger detached");
+    });
 
+    chrome.runtime.sendMessage({ type: "status", text: "Analyzing 85%" });
     // Gọi API và gửi ảnh
+
     let url_callback = await callApiWithImage(data); // Gửi ảnh lên API
     console.log(url_callback);
     // Không cần phải dọn dẹp tab nữa vì không cần chuyển tab
@@ -84,12 +90,18 @@ async function capture(tab) {
     DATA = data;
 
     l("Finished");
-
-    chrome.runtime.sendMessage({ type: "done", url_callback });
+    if (url_callback) {
+      chrome.runtime.sendMessage({ type: "status", text: "Analyzing 100%" });
+      setTimeout(() => {
+        chrome.runtime.sendMessage({ type: "done", url_callback });
+      }, 1000);
+    } else {
+      chrome.runtime.sendMessage({ type: "fail" });
+    }
   } catch (error) {
-    l("Error occurred", error);
+    // l("Error occurred", error);
     console.error("Detailed error:", error); // In ra chi tiết lỗi để debug
-    chrome.runtime.sendMessage({ type: "done" });
+    chrome.runtime.sendMessage({ type: "fail" });
   }
 }
 
@@ -100,7 +112,7 @@ async function callApiWithImage(imageDataBase64) {
   const byteCharacters = atob(base64Data);
   let uniqueImages = [...new Set(data_url.image.filter((item) => item !== ""))];
 
-  let url_image = await filterImagesByWidth(uniqueImages, 100);
+  let url_image = await filterImagesByWidth(uniqueImages, 256);
   console.log("AAA url_image ===", url_image);
   const byteNumbers = new Array(byteCharacters.length)
     .fill(0)
@@ -238,7 +250,7 @@ async function filterImagesByWidth(imageLinks, minWidth) {
         const blob = await response.blob();
         const imageBitmap = await createImageBitmap(blob);
 
-        if (imageBitmap.width > minWidth) {
+        if (imageBitmap.width > minWidth && imageBitmap.height > minWidth) {
           filteredImages.push(link);
         }
       }
