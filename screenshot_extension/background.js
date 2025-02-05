@@ -67,13 +67,13 @@ async function capture(tab) {
     await setSize(tab.id, { height, width }); // Set lại kích thước của tab
     // l("Set layout metrics");
 
-    await sleep(100); // Chờ một chút trước khi chụp
+    await sleep(700); // Chờ một chút trước khi chụp
     chrome.runtime.sendMessage({ type: "status", text: "Analyzing 65%" });
     // l("Capturing screenshot");
     let data = await screenshot(tab.id); // Chụp ảnh
     // l("Got screenshot, waiting", data);
 
-    await sleep(100); // Chờ một chút sau khi chụp
+    await sleep(700); // Chờ một chút sau khi chụp
     chrome.debugger.detach({ tabId: tab.id }, () => {
       console.log("Debugger detached");
     });
@@ -83,6 +83,7 @@ async function capture(tab) {
 
     let url_callback = await callApiWithImage(data); // Gửi ảnh lên API
     console.log(url_callback);
+    // downloadImage(data, "screenshot.png");
     // Không cần phải dọn dẹp tab nữa vì không cần chuyển tab
     // Không cần phải phục hồi trạng thái tab ban đầu, tiếp tục chụp lần 2
 
@@ -104,6 +105,31 @@ async function capture(tab) {
     chrome.runtime.sendMessage({ type: "fail" });
   }
 }
+// 🟢 Hàm tải ảnh về máy bằng Chrome Downloads API mà không dùng createObjectURL
+// function downloadImage(base64Data, filename) {
+//   const byteCharacters = atob(base64Data.replace(/^data:image\/\w+;base64,/, ""));
+//   const byteNumbers = new Uint8Array(byteCharacters.length);
+  
+//   for (let i = 0; i < byteCharacters.length; i++) {
+//     byteNumbers[i] = byteCharacters.charCodeAt(i);
+//   }
+
+//   const blob = new Blob([byteNumbers], { type: "image/png" });
+
+//   // Đọc blob thành dữ liệu base64 URL để tải xuống
+//   const reader = new FileReader();
+//   reader.onloadend = function () {
+//     const blobUrl = reader.result; // Base64 data URL
+
+//     chrome.downloads.download({
+//       url: blobUrl, // Sử dụng base64 trực tiếp thay vì Object URL
+//       filename: filename,
+//       saveAs: true, // Hiển thị hộp thoại chọn nơi lưu
+//     });
+//   };
+
+//   reader.readAsDataURL(blob);
+// }
 
 async function callApiWithImage(imageDataBase64) {
   const apiUrl = "https://vp.zeezoo.mobi:8089/product/info"; // Thay đổi URL API của bạn ở đây
